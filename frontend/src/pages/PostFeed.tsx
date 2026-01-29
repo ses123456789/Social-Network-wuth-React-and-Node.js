@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPosts } from "../services/post";
+import { getPosts,getMyPosts } from "../services/post";
 import CreatePost from "../components/CreatePost";
 import { getLoggedUser } from "../utils/auth.ts"
 import "./PostFeed.css";
@@ -24,8 +24,9 @@ type Post = {
 };
 
 const Posts = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [myPosts, setMyPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
    const loggedUser = getLoggedUser();
 
@@ -37,54 +38,76 @@ const Posts = () => {
     }));
   };
 
-  const loadPosts = async () => {
-    try {
-      const data: ApiPost[] = await getPosts();
-      setPosts(normalizePosts(data));
-    } catch (error) {
-      console.error("Error loading posts", error);
-    } finally {
-      setLoading(false);
-    }
+ const loadAll = async () => {
+    const data = await getPosts();
+    setAllPosts(normalizePosts (data));
+  };
+
+  const loadMine = async () => {
+    const data = await getMyPosts();
+    setMyPosts(normalizePosts (data));
   };
     const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+ useEffect(() => {
+  const init = async () => {
+    if (!localStorage.getItem("token")) {
       navigate("/login");
       return;
     }
 
-    loadPosts();
-  }, [navigate]); 
+    const [all, mine] = await Promise.all([
+      getPosts(),
+      getMyPosts(),
+    ]);
 
-  if (loading) {
-    return <p>Loading posts...</p>;
-  }
+    setAllPosts(normalizePosts(all));
+    setMyPosts(normalizePosts(mine));
+  };
+
+  init();
+}, [navigate]);
 
  
-  return (
-    <div className="feed-container">
-      <div className="feed">
-        {/* Header */}
-        <div className="feed-header">
-          <span>👤 {loggedUser}</span>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
 
-        <CreatePost onCreated={loadPosts} />
+ 
+   return (
+    <div className="feed-layout">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <p>👤 {loggedUser}</p>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
 
-        {posts.map((post) => (
+        <hr />
+
+        <CreatePost
+          onCreated={() => {
+            loadAll();
+            loadMine();
+          }}
+        />
+
+        <h4>My posts</h4>
+        {myPosts.map((post) => (
+          <div key={post.id} className="post">
+            <p>{post.message}</p>
+          </div>
+        ))}
+      </aside>
+
+      {/* MAIN FEED */}
+      <main className="main-feed">
+        <h2>Global feed</h2>
+
+        {allPosts.map((post) => (
           <div key={post.id} className="post">
             <p>{post.message}</p>
             <small>by {post.username}</small>
           </div>
         ))}
-      </div>
+      </main>
     </div>
   );
 };

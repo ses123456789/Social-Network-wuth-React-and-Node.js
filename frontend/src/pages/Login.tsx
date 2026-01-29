@@ -1,39 +1,49 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    setError("");
+
     try {
       await login(username, password);
       navigate("/posts");
-    } catch  {
-      alert("Login failed");
+    } catch {
+      setError("Invalid credentials");
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="login-container">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <h2>Welcome back 👋</h2>
 
-      <input
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+        {error && <p className="error">{error}</p>}
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
 
-      <button onClick={handleLogin}>Login</button>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
 };

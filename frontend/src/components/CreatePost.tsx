@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createPost } from "../services/post";
+import "./CreatePost.css"
 
 const CreatePost = ({ onCreated }: { onCreated: () => void }) => {
   const [content, setContent] = useState("");
@@ -13,13 +14,16 @@ const CreatePost = ({ onCreated }: { onCreated: () => void }) => {
   };
 
   return (
-    <div>
+    <div className="create-post-container"> 
+      <h4>What's on your mind?</h4>
       <textarea
-        placeholder="What's on your mind?"
+        className="create-post-textarea" 
+        placeholder="Share your thoughts..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        
       />
-      <button onClick={handleSubmit}>Post</button>
+      <button className="create-post-btn" onClick={handleSubmit}>Post</button>
     </div>
   );
 };

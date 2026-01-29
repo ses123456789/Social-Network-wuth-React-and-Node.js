@@ -1,14 +1,13 @@
 import { Router } from "express";
 import Post from "../models/Post";
+import User from "../models/User";
 import authMiddleware, {
   AuthRequest
 } from "../middleware/auth.middleware";
 
 const router = Router();
 
-/**
- * Crear publicación
- */
+//Crear post
 router.post("/", authMiddleware, async (req: AuthRequest, res) => {
   const { message } = req.body;
 
@@ -24,9 +23,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
   return res.status(201).json(post);
 });
 
-/**
- * Listar publicaciones
- */
+///Todos los post
 router.get("/", authMiddleware, async (_req, res) => {
   const posts = await Post.findAll({
     include: ["User"],
@@ -36,4 +33,16 @@ router.get("/", authMiddleware, async (_req, res) => {
   return res.json(posts);
 });
 
+/// Post del usuario logeado
+router.get("/me", authMiddleware, async (req: any, res) => {
+  const userId = req.user.id;
+
+  const posts = await Post.findAll({
+    where: { userId },
+    include: [{ model: User, attributes: ["id", "username"] }],
+    order: [["createdAt", "DESC"]],
+  });
+
+  res.json(posts);
+});
 export default router;

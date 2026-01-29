@@ -1,33 +1,73 @@
-.feed-container {
+.feed-layout {
+  display: flex;
   min-height: 100vh;
+  width: 100vw; 
+  margin: 0;
+  padding: 0;
   background: #f5f5f5;
-  display: flex;
-  justify-content: center;
+  box-sizing: border-box;
 }
 
-.feed {
-  width: 100%;
-  max-width: 600px;
+/* Sidebar */
+.sidebar {
+  width: 300px;
   padding: 20px;
+  background: #fafafa;
+  border-right: 1px solid #ddd;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
-
-.feed-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+/* Main feed */
+.main-feed {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  background: #9e0d0d;
+  box-sizing: border-box;
+  width: calc(100vw - 300px); 
+  max-width: calc(100vw - 300px);
+  min-width: 0; 
 }
 
-.feed-header button {
-  padding: 6px 12px;
-  cursor: pointer;
+/* Contenedor de posts dentro de main-feed */
+.main-feed > h2,
+.main-feed > div {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-
+/* Post card */
 .post {
   background: white;
   padding: 12px;
   margin-bottom: 12px;
   border-radius: 6px;
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.logout-btn {
+  background-color: #007bff; 
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-top: 10px;
 }
