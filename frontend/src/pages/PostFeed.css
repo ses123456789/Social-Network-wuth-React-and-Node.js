@@ -1,0 +1,33 @@
+.feed-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  justify-content: center;
+}
+
+.feed {
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+}
+
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.feed-header button {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+
+.post {
+  background: white;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
