@@ -12,3 +12,20 @@ export const createPost = async (message: string) => {
   const res = await api.post("/posts", { message });
   return res.data;
 };
+export const toggleLike = async (postId: number) => {
+  const res = await fetch(
+    `http://localhost:3000/posts/${postId}/like`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Error toggling like");
+  }
+
+  return res.json();
+};

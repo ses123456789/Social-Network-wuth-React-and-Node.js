@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-interface JwtPayload {
+export interface JwtPayload {
   id: number;
   username: string;
 }
@@ -11,7 +11,7 @@ export interface AuthRequest extends Request {
 }
 
 const authMiddleware = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -29,7 +29,7 @@ const authMiddleware = (
       process.env.JWT_SECRET || "secret"
     ) as JwtPayload;
 
-    req.user = decoded;
+    (req as AuthRequest).user = decoded;
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });

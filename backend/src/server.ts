@@ -3,6 +3,7 @@ import cors from "cors";
 import sequelize from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import postRoutes from "./routes/post.routes";
+import "./models"
 const app = express();
 
 app.use(

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getPosts,getMyPosts } from "../services/post";
 import CreatePost from "../components/CreatePost";
 import { getLoggedUser } from "../utils/auth.ts"
+import { toggleLike } from "../services/post";
 import "./PostFeed.css";
 //Types from backend /api
 
@@ -15,12 +16,19 @@ type ApiPost = {
   id: number;
   message: string;
   User?: ApiUser;
+  likesCount?: number | string;
+   likedByMe: boolean;
+   createdAt: string;
 };
 ///Type in front
 type Post = {
   id: number;
   message: string;
   username: string;
+  liked: boolean;
+  likesCount: number;
+  createdAt: string;
+
 };
 
 const Posts = () => {
@@ -30,13 +38,17 @@ const Posts = () => {
   const navigate = useNavigate();
    const loggedUser = getLoggedUser();
 
-  const normalizePosts = (data: ApiPost[]): Post[] => {
-    return data.map((post) => ({
-      id: post.id,
-      message: post.message,
-      username: post.User?.username ?? "unknown",
-    }));
-  };
+ const normalizePosts = (data: ApiPost[]): Post[] => {
+  return data.map((post) => ({
+    id: post.id,
+    message: post.message,
+    username: post.User?.username ?? "unknown",
+    likesCount: Number(post.likesCount ?? 0),
+    liked: post.likedByMe,
+    createdAt: post.createdAt,
+  }));
+};
+
 
  const loadAll = async () => {
     const data = await getPosts();
@@ -70,7 +82,50 @@ const Posts = () => {
   init();
 }, [navigate]);
 
- 
+const formatDate = (isoDate: string) => {
+  return new Date(isoDate).toLocaleString("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+};
+
+const handleLike = async (postId: number) => {
+  try {
+    await toggleLike(postId);
+
+    setAllPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              liked: !post.liked,
+              likesCount: post.liked
+                ? post.likesCount - 1
+                : post.likesCount + 1,
+            }
+          : post
+      )
+    );
+
+    setMyPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              liked: !post.liked,
+              likesCount: post.liked
+                ? post.likesCount - 1
+                : post.likesCount + 1,
+            }
+          : post
+      )
+    );
+  } catch (err) {
+    console.error("Like error", err);
+  }
+};
+
+
 
  
    return (
@@ -101,12 +156,22 @@ const Posts = () => {
       <main className="main-feed">
         <h2>Global feed</h2>
 
-        {allPosts.map((post) => (
-          <div key={post.id} className="post">
-            <p>{post.message}</p>
-            <small>by {post.username}</small>
-          </div>
-        ))}
+     {allPosts.map((post) => (
+  <div key={post.id} className="post">
+    <p>{post.message}</p>
+    <small>
+        by <b>{post.username}</b> · {formatDate(post.createdAt)}
+        </small>
+
+    <button
+            className={`like-btn ${post.liked ? "liked" : ""}`}
+             onClick={() => handleLike(post.id)}
+         >
+            {post.liked ? "❤️" : "🤍"}
+            <span>{post.likesCount}</span>
+        </button>
+     </div>
+))}
       </main>
     </div>
   );

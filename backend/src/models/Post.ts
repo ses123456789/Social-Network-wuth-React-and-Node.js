@@ -1,6 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
-import User from "./User";
+
 
 class Post extends Model {
   public id!: number;
@@ -27,7 +27,7 @@ Post.init(
   }
 );
 
-User.hasMany(Post, { foreignKey: "userId" });
-Post.belongsTo(User, { foreignKey: "userId" });
+
+
 
 export default Post;
