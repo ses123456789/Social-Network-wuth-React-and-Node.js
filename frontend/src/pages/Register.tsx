@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { login } from "../services/auth";
-import { useNavigate } from "react-router-dom";
+import { register } from "../services/auth";
+import { useNavigate, Link } from "react-router-dom";
 import "./Login.css";
 
-const Login = () => {
+const Register = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,17 +14,21 @@ const Login = () => {
     setError("");
 
     try {
-      await login(username, password);
+      await register(username, password);
       navigate("/posts");
-    } catch {
-      setError("Invalid credentials");
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+    setError(err.message);
+  } else {
+    setError("Register failed");
+  }
     }
   };
 
   return (
     <div className="login-container">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h2>Welcome back 👋</h2>
+        <h2>Create account 👹</h2>
 
         {error && <p className="error">{error}</p>}
 
@@ -37,20 +41,19 @@ const Login = () => {
 
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Password (min 6 chars)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button type="submit">Login</button>
+        <button type="submit">Register</button>
+
+        <p style={{ marginTop: "1rem" }}>
+          Already have an account? <Link to="/">Login</Link>
+        </p>
       </form>
- 
- <div className="register-link-container">
-      <p>Don't have an account?</p>
-      <a href="/register" className="register-link">Register</a>
-    </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;
