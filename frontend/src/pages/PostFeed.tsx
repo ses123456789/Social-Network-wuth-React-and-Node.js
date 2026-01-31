@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getPosts,getMyPosts } from "../services/post";
 import CreatePost from "../components/CreatePost";
 import { getLoggedUser } from "../utils/auth.ts"
-import { toggleLike } from "../services/post";
+import { toggleLike,updatePost,deletePost } from "../services/post";
 import "./PostFeed.css";
 //Types from backend /api
 
@@ -35,6 +35,8 @@ const Posts = () => {
   
   const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [myPosts, setMyPosts] = useState<Post[]>([]);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+const [editingMessage, setEditingMessage] = useState("");
   const navigate = useNavigate();
    const loggedUser = getLoggedUser();
 
@@ -88,6 +90,29 @@ const formatDate = (isoDate: string) => {
     timeStyle: "short",
   });
 };
+
+const startEdit = (postId: number, message: string) => {
+  setEditingPostId(postId);
+  setEditingMessage(message);
+};
+
+const handleUpdate = async (postId: number) => {
+  await updatePost(postId, editingMessage);
+  setEditingPostId(null);
+  setEditingMessage("");
+  loadAll();
+  loadMine();
+};
+
+const handleDelete = async (postId: number) => {
+  const confirm = window.confirm("Delete this post?");
+  if (!confirm) return;
+
+  await deletePost(postId);
+  loadAll();
+  loadMine();
+};
+
 
 const handleLike = async (postId: number) => {
   try {
@@ -144,12 +169,39 @@ const handleLike = async (postId: number) => {
           }}
         />
 
-        <h4>My posts</h4>
-        {myPosts.map((post) => (
-          <div key={post.id} className="post">
-            <p>{post.message}</p>
-          </div>
-        ))}
+     <h4>My posts</h4>
+
+{myPosts.map((post) => (
+  <div key={post.id} className="post">
+
+    {editingPostId === post.id ? (
+      <>
+        <textarea
+          value={editingMessage}
+          onChange={(e) => setEditingMessage(e.target.value)}
+        />
+
+        <button onClick={() => handleUpdate(post.id)}>💾 Save</button>
+        <button onClick={() => setEditingPostId(null)}>❌ Cancel</button>
+      </>
+    ) : (
+      <>
+        <p>{post.message}</p>
+
+        <div className="post-actions">
+          <button onClick={() => startEdit(post.id, post.message)}>
+            ✏️ Edit
+          </button>
+
+          <button onClick={() => handleDelete(post.id)}>
+            🗑️ Delete
+          </button>
+        </div>
+      </>
+    )}
+
+  </div>
+))}
       </aside>
 
       {/* MAIN FEED */}

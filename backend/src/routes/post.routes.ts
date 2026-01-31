@@ -4,7 +4,9 @@ import {
   createPost,
   getAllPosts,
   getMyPosts,
-  toggleLike
+  toggleLike,
+  updatePost,
+  deletePost,
 } from "../controller/post.controller";
 
 const router = Router();
@@ -18,6 +20,11 @@ router.get("/", authMiddleware, getAllPosts);
 // Posts del usuario logeado
 router.get("/me", authMiddleware, getMyPosts);
 
+//Editar post
+router.put("/:id", authMiddleware, updatePost);
+
+// eliminar post
+router.delete("/:id", authMiddleware, deletePost);
 // Likes
 router.post("/:id/like", authMiddleware, toggleLike);
 

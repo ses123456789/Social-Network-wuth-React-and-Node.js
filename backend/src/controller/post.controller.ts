@@ -162,3 +162,60 @@ export const toggleLike: RequestHandler = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+//Actualizar post
+export const updatePost: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+
+  if (!authReq.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const postId = Number(req.params.id);
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ message: "Message is required" });
+  }
+
+  const post = await Post.findByPk(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: "Post not found" });
+  }
+
+  if (post.userId !== authReq.user.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  post.message = message;
+  await post.save();
+
+  res.json(post);
+};
+
+//Borrar post
+export const deletePost: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+
+  if (!authReq.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const postId = Number(req.params.id);
+
+  const post = await Post.findByPk(postId);
+
+  if (!post) {
+    return res.status(404).json({ message: "Post not found" });
+  }
+
+  
+  if (post.userId !== authReq.user.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  await post.destroy();
+
+  res.json({ message: "Post deleted successfully" });
+};
