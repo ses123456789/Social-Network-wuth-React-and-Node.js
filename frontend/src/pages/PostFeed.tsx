@@ -4,6 +4,7 @@ import { getPosts,getMyPosts } from "../services/post";
 import CreatePost from "../components/CreatePost";
 import { getLoggedUser } from "../utils/auth.ts"
 import { toggleLike,updatePost,deletePost } from "../services/post";
+import { searchUsers } from "../services/user";
 import "./PostFeed.css";
 //Types from backend /api
 
@@ -37,6 +38,12 @@ const Posts = () => {
   const [myPosts, setMyPosts] = useState<Post[]>([]);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 const [editingMessage, setEditingMessage] = useState("");
+  
+const [search, setSearch] = useState("");
+const [users, setUsers] = useState<ApiUser[]>([]);
+const [loadingUsers, setLoadingUsers] = useState(false);
+const [selectedUser, setSelectedUser] = useState<string | null>(null);
+
   const navigate = useNavigate();
    const loggedUser = getLoggedUser();
 
@@ -52,10 +59,10 @@ const [editingMessage, setEditingMessage] = useState("");
 };
 
 
- const loadAll = async () => {
-    const data = await getPosts();
-    setAllPosts(normalizePosts (data));
-  };
+const loadAll = async (username?: string) => {
+  const data = await getPosts(username);
+  setAllPosts(normalizePosts(data));
+};
 
   const loadMine = async () => {
     const data = await getMyPosts();
@@ -83,6 +90,28 @@ const [editingMessage, setEditingMessage] = useState("");
 
   init();
 }, [navigate]);
+
+useEffect(() => {
+  const delay = setTimeout(async () => {
+    if (!search.trim()) {
+      setUsers([]);
+      return;
+    }
+
+    try {
+      setLoadingUsers(true);
+      const data = await searchUsers(search);
+      setUsers(data);
+    } catch (err) {
+      console.error("Search error", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, 300); 
+
+  return () => clearTimeout(delay);
+}, [search]);
+
 
 const formatDate = (isoDate: string) => {
   return new Date(isoDate).toLocaleString("es-CO", {
@@ -205,25 +234,76 @@ const handleLike = async (postId: number) => {
       </aside>
 
       {/* MAIN FEED */}
+
       <main className="main-feed">
-        <h2>Global feed</h2>
+         <div className="search-users">
+    <h4>Search users</h4>
 
-     {allPosts.map((post) => (
-  <div key={post.id} className="post">
-    <p>{post.message}</p>
-    <small>
+    <input
+      type="text"
+      placeholder="Search user..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+
+    {loadingUsers && <small>Searching...</small>}
+
+   <ul className="user-results">
+  {users.map((user) => (
+    <li
+      key={user.id}
+      onClick={async () => {
+        setSelectedUser(user.username);
+        setUsers([]);
+        await loadAll(user.username);
+      }}
+      className="user-item"
+    >
+      👤 {user.username}
+    </li>
+  ))}
+</ul>
+  </div>
+        <h2> {selectedUser ? `${selectedUser} posts` : "Global feed"}</h2>
+        {selectedUser && (
+  <button
+    className="back-btn"
+    onClick={async () => {
+      setSelectedUser(null);
+      setSearch("");     
+      setUsers([]); 
+      await loadAll();
+    }}
+  >
+    ← Back to Global feed
+  </button>
+)}
+
+    {allPosts.length === 0 ? (
+  <p className="empty-state">
+    {selectedUser
+      ? `${selectedUser} has no posts yet`
+      : "No posts yet"}
+  </p>
+) : (
+  allPosts.map((post) => (
+    <div key={post.id} className="post">
+      <p>{post.message}</p>
+      <small>
         by <b>{post.username}</b> · {formatDate(post.createdAt)}
-        </small>
+      </small>
 
-    <button
-            className={`like-btn ${post.liked ? "liked" : ""}`}
-             onClick={() => handleLike(post.id)}
-         >
-            {post.liked ? "❤️" : "🤍"}
-            <span>{post.likesCount}</span>
-        </button>
-     </div>
-))}
+      <button
+        className={`like-btn ${post.liked ? "liked" : ""}`}
+        onClick={() => handleLike(post.id)}
+      >
+        {post.liked ? "❤️" : "🤍"}
+        <span>{post.likesCount}</span>
+      </button>
+    </div>
+  ))
+)}
+
       </main>
     </div>
   );

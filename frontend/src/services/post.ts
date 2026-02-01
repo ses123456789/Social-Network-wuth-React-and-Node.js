@@ -1,9 +1,12 @@
 import api from "./api.ts";
 
-export const getPosts = async () => {
-  const res = await api.get("/posts");
+export const getPosts = async (username?: string) => {
+  const res = await api.get(
+    username ? `/posts?user=${username}` : "/posts"
+  );
   return res.data;
 };
+
 export const getMyPosts = async () => {
   const res = await api.get("/posts/me");
   return res.data;

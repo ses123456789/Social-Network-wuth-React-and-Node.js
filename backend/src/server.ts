@@ -3,6 +3,7 @@ import cors from "cors";
 import sequelize from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import postRoutes from "./routes/post.routes";
+import userRoutes from "./routes/user.routes"
 import "./models"
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
+app.use("/users",userRoutes)
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });

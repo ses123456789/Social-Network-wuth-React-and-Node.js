@@ -31,13 +31,18 @@ export const createPost: RequestHandler = async (req, res) => {
  */
 export const getAllPosts: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
-  const userId = authReq.user?.id ?? 0;
+  const loggedUserId = authReq.user?.id ?? 0;
+
+  const { user } = req.query;
 
   const posts = await Post.findAll({
     include: [
       {
         model: User,
         attributes: ["id", "username"],
+        ...(user
+          ? { where: { username: user } } // 🔥 FILTRO AQUÍ
+          : {}),
       },
       {
         model: Like,
@@ -54,7 +59,7 @@ export const getAllPosts: RequestHandler = async (req, res) => {
         ],
         [
           Sequelize.literal(
-            `SUM(CASE WHEN "likes"."userId" = ${userId} THEN 1 ELSE 0 END) > 0`
+            `SUM(CASE WHEN "likes"."userId" = ${loggedUserId} THEN 1 ELSE 0 END) > 0`
           ),
           "likedByMe",
         ],
@@ -66,8 +71,6 @@ export const getAllPosts: RequestHandler = async (req, res) => {
 
   res.json(posts);
 };
-
-
 
 
 /**
